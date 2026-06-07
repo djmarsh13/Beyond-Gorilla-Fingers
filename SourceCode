@@ -6,7 +6,7 @@ using BepInEx;
 
 namespace BeyondSandboxFingerPhysics
 {
-    [BepInPlugin("com.expertdev.gorillatag.fingerphysics", "Beyond Sandbox Finger Physics", "3.4.0")]
+    [BepInPlugin("com.expertdev.gorillatag.fingerphysics", "Beyond Sandbox Finger Physics", "3.5.0")]
     public class Plugin : BaseUnityPlugin
     {
         private void Start()
@@ -101,16 +101,27 @@ namespace BeyondSandboxFingerPhysics
             {
                 yield return new WaitForSeconds(2f);
 
+                Collider[] localCols = GorillaLocomotion.GTPlayer.Instance.GetComponentsInChildren<Collider>(true);
+                foreach (FingerChain chain in fingers)
+                {
+                    foreach (Collider proxy in chain.proxyColliders)
+                    {
+                        if (proxy == null) continue;
+                        foreach (Collider lc in localCols)
+                        {
+                            if (lc != null) Physics.IgnoreCollision(proxy, lc, true);
+                        }
+                    }
+                }
+
                 VRRig[] allRigs = FindObjectsOfType<VRRig>();
                 foreach (VRRig rig in allRigs)
                 {
                     if (rig == null || !rig.gameObject.activeInHierarchy) continue;
                     if (!processedRigs.Contains(rig))
                     {
-                        Collider[] locCols = GorillaLocomotion.GTPlayer.Instance.GetComponentsInChildren<Collider>(true);
                         Collider[] rigCols = rig.GetComponentsInChildren<Collider>(true);
-
-                        CreatePhantomColliders(rig.transform, locCols, rigCols, false);
+                        CreatePhantomColliders(rig.transform, localCols, rigCols, false);
                         processedRigs.Add(rig);
                     }
                 }
@@ -175,17 +186,11 @@ namespace BeyondSandboxFingerPhysics
             GameObject go = new GameObject("PhantomSphere_" + parent.name);
             go.transform.SetParent(parent, false);
             go.transform.localPosition = offset;
-            go.layer = 2;
+            go.layer = 10;
 
             SphereCollider col = go.AddComponent<SphereCollider>();
             col.radius = radius;
-
-            Rigidbody rb = go.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-            rb.useGravity = false;
-
-            foreach (Collider lc in locCols) if (lc != null) Physics.IgnoreCollision(col, lc, true);
-            foreach (Collider rc in rigCols) if (rc != null) Physics.IgnoreCollision(col, rc, true);
+            col.isTrigger = true;
 
             phantomColliders.Add(new PhantomCol { collider = col, type = type });
         }
@@ -201,19 +206,13 @@ namespace BeyondSandboxFingerPhysics
             go.transform.position = (start.position + end.position) / 2f;
             go.transform.LookAt(end);
 
-            go.layer = 2;
+            go.layer = 10;
 
             CapsuleCollider col = go.AddComponent<CapsuleCollider>();
             col.direction = 2;
             col.radius = radius;
             col.height = length + (radius * 2);
-
-            Rigidbody rb = go.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-            rb.useGravity = false;
-
-            foreach (Collider lc in locCols) if (lc != null) Physics.IgnoreCollision(col, lc, true);
-            foreach (Collider rc in rigCols) if (rc != null) Physics.IgnoreCollision(col, rc, true);
+            col.isTrigger = true;
 
             phantomColliders.Add(new PhantomCol { collider = col, type = type });
         }
@@ -262,7 +261,6 @@ namespace BeyondSandboxFingerPhysics
         private Vector3 lastBasePosition;
 
         private const float PROXY_RADIUS = 0.012f;
-        private const float TRACKING_FORCE = 250f;
         private const float MAX_BEND_ANGLE = 45f;
 
         public void Initialize(Transform[] bones, int playerLayer, Collider[] rigColliders, Collider[] locomotionColliders)
@@ -308,13 +306,13 @@ namespace BeyondSandboxFingerPhysics
                 proxyColliders[i] = col;
 
                 Rigidbody rb = proxyObj.AddComponent<Rigidbody>();
-                rb.mass = 0.02f;
+                rb.mass = 0.05f;
                 rb.useGravity = false;
                 rb.isKinematic = false;
                 rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
                 rb.interpolation = RigidbodyInterpolation.Interpolate;
-                rb.linearDamping = 50f;
-                rb.angularDamping = 50f;
+                rb.linearDamping = 10f;
+                rb.angularDamping = 10f;
                 rb.sleepThreshold = 0f;
 
                 proxyObj.transform.position = bones[i].position;
@@ -352,7 +350,6 @@ namespace BeyondSandboxFingerPhysics
             if (dt > 0f)
             {
                 handVel = (targetPositions[0] - lastBasePosition) / dt;
-                handVel = Vector3.ClampMagnitude(handVel, 50f);
                 lastBasePosition = targetPositions[0];
             }
 
@@ -382,16 +379,18 @@ namespace BeyondSandboxFingerPhysics
 
                 Vector3 error = targetPos - proxies[i].position;
 
-                if (error.sqrMagnitude > 0.04f)
+                if (error.sqrMagnitude > 0.01f)
                 {
                     proxies[i].position = targetPos;
                     proxies[i].linearVelocity = handVel;
                 }
                 else
                 {
-                    Vector3 trackingVel = error * TRACKING_FORCE;
-                    trackingVel = Vector3.ClampMagnitude(trackingVel, 20f);
-                    proxies[i].linearVelocity = handVel + trackingVel;
+                    if (dt > 0f)
+                    {
+                        Vector3 exactVel = error / dt;
+                        proxies[i].linearVelocity = handVel + Vector3.ClampMagnitude(exactVel, 150f);
+                    }
                 }
             }
         }
