@@ -6,7 +6,7 @@ using BepInEx;
 
 namespace BeyondSandboxFingerPhysics
 {
-    [BepInPlugin("com.expertdev.gorillatag.fingerphysics", "Beyond Sandbox Finger Physics", "3.3.0")]
+    [BepInPlugin("com.expertdev.gorillatag.fingerphysics", "Beyond Sandbox Finger Physics", "3.4.0")]
     public class Plugin : BaseUnityPlugin
     {
         private void Start()
@@ -262,7 +262,7 @@ namespace BeyondSandboxFingerPhysics
         private Vector3 lastBasePosition;
 
         private const float PROXY_RADIUS = 0.012f;
-        private const float TRACKING_FORCE = 100f;
+        private const float TRACKING_FORCE = 250f;
         private const float MAX_BEND_ANGLE = 45f;
 
         public void Initialize(Transform[] bones, int playerLayer, Collider[] rigColliders, Collider[] locomotionColliders)
@@ -308,13 +308,13 @@ namespace BeyondSandboxFingerPhysics
                 proxyColliders[i] = col;
 
                 Rigidbody rb = proxyObj.AddComponent<Rigidbody>();
-                rb.mass = 0.015f;
+                rb.mass = 0.02f;
                 rb.useGravity = false;
                 rb.isKinematic = false;
                 rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
                 rb.interpolation = RigidbodyInterpolation.Interpolate;
-                rb.linearDamping = 35f;
-                rb.angularDamping = 35f;
+                rb.linearDamping = 50f;
+                rb.angularDamping = 50f;
                 rb.sleepThreshold = 0f;
 
                 proxyObj.transform.position = bones[i].position;
@@ -352,7 +352,7 @@ namespace BeyondSandboxFingerPhysics
             if (dt > 0f)
             {
                 handVel = (targetPositions[0] - lastBasePosition) / dt;
-                handVel = Vector3.ClampMagnitude(handVel, 15f);
+                handVel = Vector3.ClampMagnitude(handVel, 50f);
                 lastBasePosition = targetPositions[0];
             }
 
@@ -390,7 +390,7 @@ namespace BeyondSandboxFingerPhysics
                 else
                 {
                     Vector3 trackingVel = error * TRACKING_FORCE;
-                    trackingVel = Vector3.ClampMagnitude(trackingVel, 4f);
+                    trackingVel = Vector3.ClampMagnitude(trackingVel, 20f);
                     proxies[i].linearVelocity = handVel + trackingVel;
                 }
             }
@@ -455,7 +455,7 @@ namespace BeyondSandboxFingerPhysics
             {
                 if (boneLengths[i] < 0.015f)
                 {
-                    smoothedLocalRotations[i] = Quaternion.Slerp(smoothedLocalRotations[i], targetLocalRotations[i], Time.deltaTime * 40f);
+                    smoothedLocalRotations[i] = Quaternion.Slerp(smoothedLocalRotations[i], targetLocalRotations[i], Time.deltaTime * 60f);
                     visualBones[i].localRotation = smoothedLocalRotations[i];
 
                     Vector3 animDirBypass = visualBones[i].rotation * Quaternion.Inverse(targetRotations[i]) * (targetPositions[i + 1] - targetPositions[i]);
@@ -491,14 +491,14 @@ namespace BeyondSandboxFingerPhysics
                 Quaternion targetWorldRot = Quaternion.FromToRotation(animDir, dirToProxy) * targetRotations[i];
                 Quaternion targetLocalRot = Quaternion.Inverse(visualBones[i].parent.rotation) * targetWorldRot;
 
-                smoothedLocalRotations[i] = Quaternion.Slerp(smoothedLocalRotations[i], targetLocalRot, Time.deltaTime * 40f);
+                smoothedLocalRotations[i] = Quaternion.Slerp(smoothedLocalRotations[i], targetLocalRot, Time.deltaTime * 60f);
                 visualBones[i].localRotation = smoothedLocalRotations[i];
 
                 Vector3 appliedDir = visualBones[i].rotation * Quaternion.Inverse(targetRotations[i]) * animDir;
                 visualBones[i + 1].position = currentPos + appliedDir.normalized * boneLengths[i];
             }
 
-            smoothedLocalRotations[count - 1] = Quaternion.Slerp(smoothedLocalRotations[count - 1], targetLocalRotations[count - 1], Time.deltaTime * 40f);
+            smoothedLocalRotations[count - 1] = Quaternion.Slerp(smoothedLocalRotations[count - 1], targetLocalRotations[count - 1], Time.deltaTime * 60f);
             visualBones[count - 1].localRotation = smoothedLocalRotations[count - 1];
         }
     }
