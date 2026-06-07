@@ -6,7 +6,7 @@ using BepInEx;
 
 namespace BeyondSandboxFingerPhysics
 {
-    [BepInPlugin("com.expertdev.gorillatag.fingerphysics", "Beyond Sandbox Finger Physics", "3.2.0")]
+    [BepInPlugin("com.expertdev.gorillatag.fingerphysics", "Beyond Sandbox Finger Physics", "3.3.0")]
     public class Plugin : BaseUnityPlugin
     {
         private void Start()
@@ -33,7 +33,7 @@ namespace BeyondSandboxFingerPhysics
         public PhantomType type;
     }
 
-    [DefaultExecutionOrder(10000)] 
+    [DefaultExecutionOrder(10000)]
     public class FingerPhysicsManager : MonoBehaviour
     {
         private List<FingerChain> fingers = new List<FingerChain>();
@@ -44,7 +44,7 @@ namespace BeyondSandboxFingerPhysics
             new string[] { "rig/hand.L/palm.01.L/f_index.01.L", "rig/hand.L/palm.01.L/f_index.01.L/f_index.02.L", "rig/hand.L/palm.01.L/f_index.01.L/f_index.02.L/f_index.03.L", "rig/hand.L/palm.01.L/f_index.01.L/f_index.02.L/f_index.03.L/f_index.03.L_end" },
             new string[] { "rig/hand.L/palm.02.L/f_middle.01.L", "rig/hand.L/palm.02.L/f_middle.01.L/f_middle.02.L", "rig/hand.L/palm.02.L/f_middle.01.L/f_middle.02.L/f_middle.03.L", "rig/hand.L/palm.02.L/f_middle.01.L/f_middle.02.L/f_middle.03.L/f_middle.03.L_end" },
             new string[] { "rig/hand.L/palm.01.L/thumb.01.L", "rig/hand.L/palm.01.L/thumb.01.L/thumb.02.L", "rig/hand.L/palm.01.L/thumb.01.L/thumb.02.L/thumb.03.L", "rig/hand.L/palm.01.L/thumb.01.L/thumb.02.L/thumb.03.L/thumb.03.L_end" },
-            
+
             new string[] { "rig/hand.R/palm.01.R/f_index.01.R", "rig/hand.R/palm.01.R/f_index.01.R/f_index.02.R", "rig/hand.R/palm.01.R/f_index.01.R/f_index.02.R/f_index.03.R", "rig/hand.R/palm.01.R/f_index.01.R/f_index.02.R/f_index.03.R/f_index.03.R_end" },
             new string[] { "rig/hand.R/palm.02.R/f_middle.01.R", "rig/hand.R/palm.02.R/f_middle.01.R/f_middle.02.R", "rig/hand.R/palm.02.R/f_middle.01.R/f_middle.02.R/f_middle.03.R", "rig/hand.R/palm.02.R/f_middle.01.R/f_middle.02.R/f_middle.03.R/f_middle.03.R_end" },
             new string[] { "rig/hand.R/palm.01.R/thumb.01.R", "rig/hand.R/palm.01.R/thumb.01.R/thumb.02.R", "rig/hand.R/palm.01.R/thumb.01.R/thumb.02.R/thumb.03.R", "rig/hand.R/palm.01.R/thumb.01.R/thumb.02.R/thumb.03.R/thumb.03.R_end" }
@@ -57,7 +57,7 @@ namespace BeyondSandboxFingerPhysics
             Collider[] rigColliders = GetComponentsInChildren<Collider>(true);
             Collider[] locomotionColliders = GorillaLocomotion.GTPlayer.Instance.GetComponentsInChildren<Collider>(true);
 
-            int playerLayer = GorillaLocomotion.GTPlayer.Instance.bodyCollider != null ? 
+            int playerLayer = GorillaLocomotion.GTPlayer.Instance.bodyCollider != null ?
                               GorillaLocomotion.GTPlayer.Instance.bodyCollider.gameObject.layer : 8;
 
             CreatePhantomColliders(rigRoot, locomotionColliders, rigColliders, true);
@@ -100,7 +100,7 @@ namespace BeyondSandboxFingerPhysics
             while (true)
             {
                 yield return new WaitForSeconds(2f);
-                
+
                 VRRig[] allRigs = FindObjectsOfType<VRRig>();
                 foreach (VRRig rig in allRigs)
                 {
@@ -109,7 +109,7 @@ namespace BeyondSandboxFingerPhysics
                     {
                         Collider[] locCols = GorillaLocomotion.GTPlayer.Instance.GetComponentsInChildren<Collider>(true);
                         Collider[] rigCols = rig.GetComponentsInChildren<Collider>(true);
-                        
+
                         CreatePhantomColliders(rig.transform, locCols, rigCols, false);
                         processedRigs.Add(rig);
                     }
@@ -121,7 +121,7 @@ namespace BeyondSandboxFingerPhysics
         {
             Transform head = rigRoot.Find("rig/head");
             Transform body = rigRoot.Find("rig/body_pivot/body");
-            
+
             Transform upperL = rigRoot.Find("rig/body_pivot/shoulder.L/upper_arm.L");
             Transform lowerL = rigRoot.Find("rig/body_pivot/shoulder.L/upper_arm.L/forearm.L");
             Transform handL = rigRoot.Find("rig/hand.L");
@@ -134,13 +134,13 @@ namespace BeyondSandboxFingerPhysics
             PhantomType typeR = isLocal ? PhantomType.Right : PhantomType.Neutral;
             PhantomType typeN = PhantomType.Neutral;
 
-            AddPhantomCapsule(body, head, 0.18f, typeN, locCols, rigCols); 
-            AddPhantomSphere(body, 0.2f, new Vector3(0, -0.1f, 0), typeN, locCols, rigCols); 
-            AddPhantomSphere(head, 0.15f, Vector3.zero, typeN, locCols, rigCols); 
+            AddPhantomCapsule(body, head, 0.18f, typeN, locCols, rigCols);
+            AddPhantomSphere(body, 0.2f, new Vector3(0, -0.1f, 0), typeN, locCols, rigCols);
+            AddPhantomSphere(head, 0.15f, Vector3.zero, typeN, locCols, rigCols);
 
-            AddPhantomCapsule(upperL, lowerL, 0.08f, typeL, locCols, rigCols); 
-            AddPhantomCapsule(lowerL, handL, 0.07f, typeL, locCols, rigCols);  
-            AddPhantomSphere(handL, 0.08f, new Vector3(0, -0.04f, 0), typeL, locCols, rigCols); 
+            AddPhantomCapsule(upperL, lowerL, 0.08f, typeL, locCols, rigCols);
+            AddPhantomCapsule(lowerL, handL, 0.07f, typeL, locCols, rigCols);
+            AddPhantomSphere(handL, 0.08f, new Vector3(0, -0.04f, 0), typeL, locCols, rigCols);
 
             AddPhantomCapsule(upperR, lowerR, 0.08f, typeR, locCols, rigCols);
             AddPhantomCapsule(lowerR, handR, 0.07f, typeR, locCols, rigCols);
@@ -154,13 +154,13 @@ namespace BeyondSandboxFingerPhysics
                 for (int i = 0; i < pathChain.Length - 1; i++)
                 {
                     Transform start = rigRoot.Find(pathChain[i]);
-                    Transform end = rigRoot.Find(pathChain[i+1]);
+                    Transform end = rigRoot.Find(pathChain[i + 1]);
                     if (start != null && end != null)
                     {
                         AddPhantomCapsule(start, end, 0.015f, pType, locCols, rigCols);
                     }
                 }
-                
+
                 Transform tip = rigRoot.Find(pathChain[pathChain.Length - 1]);
                 if (tip != null)
                 {
@@ -175,8 +175,8 @@ namespace BeyondSandboxFingerPhysics
             GameObject go = new GameObject("PhantomSphere_" + parent.name);
             go.transform.SetParent(parent, false);
             go.transform.localPosition = offset;
-            go.layer = 2; 
-            
+            go.layer = 2;
+
             SphereCollider col = go.AddComponent<SphereCollider>();
             col.radius = radius;
 
@@ -196,15 +196,15 @@ namespace BeyondSandboxFingerPhysics
 
             GameObject go = new GameObject("PhantomCapsule_" + start.name);
             go.transform.SetParent(start, false);
-            
+
             float length = Vector3.Distance(start.position, end.position);
             go.transform.position = (start.position + end.position) / 2f;
             go.transform.LookAt(end);
-            
-            go.layer = 2; 
-            
+
+            go.layer = 2;
+
             CapsuleCollider col = go.AddComponent<CapsuleCollider>();
-            col.direction = 2; 
+            col.direction = 2;
             col.radius = radius;
             col.height = length + (radius * 2);
 
@@ -253,7 +253,7 @@ namespace BeyondSandboxFingerPhysics
         private float[] boneLengths;
         public Rigidbody[] proxies;
         public Collider[] proxyColliders;
-        
+
         private Vector3[] targetPositions;
         private Quaternion[] targetRotations;
         private Quaternion[] targetLocalRotations;
@@ -261,15 +261,15 @@ namespace BeyondSandboxFingerPhysics
 
         private Vector3 lastBasePosition;
 
-        private const float PROXY_RADIUS = 0.012f; 
-        private const float TRACKING_FORCE = 80f;  
-        private const float MAX_BEND_ANGLE = 45f;  
+        private const float PROXY_RADIUS = 0.012f;
+        private const float TRACKING_FORCE = 100f;
+        private const float MAX_BEND_ANGLE = 45f;
 
         public void Initialize(Transform[] bones, int playerLayer, Collider[] rigColliders, Collider[] locomotionColliders)
         {
             visualBones = bones;
             int count = bones.Length;
-            
+
             isLeftHand = bones[0].name.Contains(".L");
 
             boneLengths = new float[count - 1];
@@ -292,30 +292,30 @@ namespace BeyondSandboxFingerPhysics
                 smoothedLocalRotations[i] = bones[i].localRotation;
 
                 GameObject proxyObj = new GameObject("PhysicsProxy_" + bones[i].name);
-                proxyObj.layer = playerLayer; 
+                proxyObj.layer = playerLayer;
 
                 SphereCollider col = proxyObj.AddComponent<SphereCollider>();
                 col.radius = PROXY_RADIUS;
-                
-                col.material = new PhysicsMaterial 
-                { 
-                    frictionCombine = PhysicsMaterialCombine.Minimum, 
-                    bounceCombine = PhysicsMaterialCombine.Minimum, 
-                    staticFriction = 0f, 
-                    dynamicFriction = 0f, 
-                    bounciness = 0f 
+
+                col.material = new PhysicsMaterial
+                {
+                    frictionCombine = PhysicsMaterialCombine.Minimum,
+                    bounceCombine = PhysicsMaterialCombine.Minimum,
+                    staticFriction = 0f,
+                    dynamicFriction = 0f,
+                    bounciness = 0f
                 };
                 proxyColliders[i] = col;
 
                 Rigidbody rb = proxyObj.AddComponent<Rigidbody>();
-                rb.mass = 0.005f; 
+                rb.mass = 0.015f;
                 rb.useGravity = false;
                 rb.isKinematic = false;
                 rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
                 rb.interpolation = RigidbodyInterpolation.Interpolate;
-                rb.linearDamping = 25f;
-                rb.angularDamping = 25f;
-                rb.sleepThreshold = 0f; 
+                rb.linearDamping = 35f;
+                rb.angularDamping = 35f;
+                rb.sleepThreshold = 0f;
 
                 proxyObj.transform.position = bones[i].position;
                 proxies[i] = rb;
@@ -369,20 +369,20 @@ namespace BeyondSandboxFingerPhysics
                 {
                     float weight = (i == count - 2) ? 0.4f : 0.2f;
                     Vector3 pull = tipOffset * weight;
-                    
+
                     Vector3 boneDir = (targetPositions[i] - targetPositions[i - 1]).normalized;
                     Vector3 pullAlongBone = Vector3.Project(pull, boneDir);
                     if (Vector3.Dot(pullAlongBone, boneDir) < 0)
                     {
                         pull -= pullAlongBone;
                     }
-                    
+
                     targetPos += pull;
                 }
 
                 Vector3 error = targetPos - proxies[i].position;
-                
-                if (error.sqrMagnitude > 0.04f) 
+
+                if (error.sqrMagnitude > 0.04f)
                 {
                     proxies[i].position = targetPos;
                     proxies[i].linearVelocity = handVel;
@@ -390,7 +390,7 @@ namespace BeyondSandboxFingerPhysics
                 else
                 {
                     Vector3 trackingVel = error * TRACKING_FORCE;
-                    trackingVel = Vector3.ClampMagnitude(trackingVel, 4f); 
+                    trackingVel = Vector3.ClampMagnitude(trackingVel, 4f);
                     proxies[i].linearVelocity = handVel + trackingVel;
                 }
             }
@@ -404,9 +404,9 @@ namespace BeyondSandboxFingerPhysics
                 {
                     PhantomCol phantom = phantoms[p];
                     if (phantom.collider == null || !phantom.collider.gameObject.activeInHierarchy) continue;
-                    
-                    if (phantom.type == PhantomType.Neutral || 
-                       (isLeftHand && phantom.type == PhantomType.Right) || 
+
+                    if (phantom.type == PhantomType.Neutral ||
+                       (isLeftHand && phantom.type == PhantomType.Right) ||
                        (!isLeftHand && phantom.type == PhantomType.Left))
                     {
                         Vector3 dir;
@@ -423,8 +423,8 @@ namespace BeyondSandboxFingerPhysics
 
                 foreach (FingerChain otherChain in allFingers)
                 {
-                    if (!this.isLeftHand || otherChain.isLeftHand) continue; 
-                    
+                    if (!this.isLeftHand || otherChain.isLeftHand) continue;
+
                     for (int j = 1; j < otherChain.proxies.Length; j++)
                     {
                         if (otherChain.proxyColliders[j] == null) continue;
@@ -457,7 +457,7 @@ namespace BeyondSandboxFingerPhysics
                 {
                     smoothedLocalRotations[i] = Quaternion.Slerp(smoothedLocalRotations[i], targetLocalRotations[i], Time.deltaTime * 40f);
                     visualBones[i].localRotation = smoothedLocalRotations[i];
-                    
+
                     Vector3 animDirBypass = visualBones[i].rotation * Quaternion.Inverse(targetRotations[i]) * (targetPositions[i + 1] - targetPositions[i]);
                     visualBones[i + 1].position = visualBones[i].position + animDirBypass.normalized * boneLengths[i];
                     continue;
@@ -465,7 +465,7 @@ namespace BeyondSandboxFingerPhysics
 
                 Vector3 currentPos = visualBones[i].position;
                 Vector3 proxyNextPos = proxies[i + 1].position;
-                
+
                 Vector3 dirToProxy = proxyNextPos - currentPos;
                 Vector3 animDir = targetPositions[i + 1] - targetPositions[i];
 
@@ -477,14 +477,14 @@ namespace BeyondSandboxFingerPhysics
 
                 if (i == count - 2)
                 {
-                    dirToProxy = Vector3.Lerp(dirToProxy, animDir, 0.8f).normalized; 
+                    dirToProxy = Vector3.Lerp(dirToProxy, animDir, 0.8f).normalized;
                 }
 
                 float angle = Vector3.Angle(animDir, dirToProxy);
                 if (angle > MAX_BEND_ANGLE)
                 {
                     Vector3 axis = Vector3.Cross(animDir, dirToProxy);
-                    if (axis.sqrMagnitude < 0.001f) axis = targetRotations[i] * Vector3.right; 
+                    if (axis.sqrMagnitude < 0.001f) axis = targetRotations[i] * Vector3.right;
                     dirToProxy = Quaternion.AngleAxis(MAX_BEND_ANGLE, axis.normalized) * animDir;
                 }
 
@@ -497,7 +497,7 @@ namespace BeyondSandboxFingerPhysics
                 Vector3 appliedDir = visualBones[i].rotation * Quaternion.Inverse(targetRotations[i]) * animDir;
                 visualBones[i + 1].position = currentPos + appliedDir.normalized * boneLengths[i];
             }
-            
+
             smoothedLocalRotations[count - 1] = Quaternion.Slerp(smoothedLocalRotations[count - 1], targetLocalRotations[count - 1], Time.deltaTime * 40f);
             visualBones[count - 1].localRotation = smoothedLocalRotations[count - 1];
         }
